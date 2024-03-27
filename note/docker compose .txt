@@ -1,0 +1,16 @@
+** docker compose **
+
+ 1.check version:  
+
+>> docker compose version : 
+Docker Compose version v2.24.6-desktop.1
+
+2. check docker engine
+
+>> docker version 
+Engine:
+  Version:          25.0.3
+
+3. 
+
+
