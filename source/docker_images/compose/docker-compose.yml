@@ -17,15 +17,15 @@ services:
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@email.com
       - PGADMIN_DEFAULT_PASSWORD=admin
-      - PGADMIN_LISTEN_PORT=5050
+      - PGADMIN_LISTEN_PORT=5151
 
     ports:
       - "5050:5050"
   
   account_service:
-    image: account_service
+    image: vibollong/account_service
     ports:
-      - "8181:8181"
+      - "8080:8080"
 
 volumes:
   data:
