@@ -1,4 +1,4 @@
-* crate serperate server for Config Server * 
+* Crate serperate server for Config Server * 
 
 1. Create configserver 
 - @EnableConfigServer (Put in main class: ConfigserverApplication)

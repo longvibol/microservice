@@ -1,0 +1,103 @@
+feign client:កន្លែងដែលយើងត្រូវបង្កើតអោយវាមានទំនាក់ទំនងជាមួយ service ដទៃទៀត
+ដូចជា Account serive ចង់បានពត៌មានពី loan and card 
+
+Ex: endpoint :customerDetail
+
+customer: 1 have ==> 
+
++ customer name: 
++ account type:
++ loans : [5000, 30000]
++ cards : [debit001, credit002,saveing] 
+
+ដូចនេះយើងត្រូវបង្កើត feign client in Cardservice :
+
+==========================
+
+Step to create feign client: 
+
+1. Add dependency :
+
+<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
+
+------------ what they provide the endpoint from the API:
+
+GET: localhost:8070/api/cards/1
+
+- localhost:8070 = service
+- /api/cards/1 = PATH
+
+
+{
+        "cardId": number,
+        "customerId": number,
+        "cardNumber": string,
+        "cardType": "credit lose",
+        "totalLimit": 6000,
+        "amountUsed": 200,
+        "availableAmount": 4900,
+        "createDate": "2024-04-24"
+    },
+
+It mean it is the List<card> ==> we will crate our card by ourselve 
+
+2. Create interface :
+- CardFeignClient in service.client ==> then create CardDto(class) 
+
+- 
+
+
+3. Create API call from account 
+
+4. convert DT)
+
+5. Anotation @EnableFeignClients for spring create bean
+
+
+*** Fix Error 
+
+- must anable : @EnableFeignClients
+- Ambiguous(ស្ទួន) mapping : in customerController have double bean we need to identity deference :
+ត្រូវដាក់ PATH អោយខុសគ្នា
+
+==> @GetMapping("customerdetail/{customerId}") ដាក់អោយខុសគ្នាជាមួយអាស្ទួននឹងទៅ
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

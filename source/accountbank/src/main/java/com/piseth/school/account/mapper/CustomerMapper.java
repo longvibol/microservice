@@ -20,5 +20,18 @@ public class CustomerMapper {
 
 		return customer;
 	}
+	
+	
+	//convert from customer to CustomerDTO
+	public CustomerDTO toCustomerDTO(Customer entity) {
+
+		CustomerDTO dto = new CustomerDTO();
+		dto.setName(dto.getName());
+		dto.setEmail(dto.getEmail());
+		dto.setMobileNumber(dto.getMobileNumber());
+		dto.setCreateDate(entity.getCreateDate() !=null ? entity.getCreateDate().toString():"");
+
+		return dto;
+	}
 
 }

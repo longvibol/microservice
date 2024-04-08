@@ -1,7 +1,8 @@
 package com.piseth.school.account.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,10 +11,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.piseth.school.account.dto.CardResponseDTO;
 import com.piseth.school.account.dto.CustomerDTO;
+import com.piseth.school.account.dto.CustomerDetailDTO;
+import com.piseth.school.account.dto.LoanResponseDTO;
 import com.piseth.school.account.entity.Customer;
 import com.piseth.school.account.mapper.CustomerMapper;
 import com.piseth.school.account.service.CustomerService;
+import com.piseth.school.account.service.client.CardFeignClient;
+import com.piseth.school.account.service.client.LoanFeignClient;
 
 @RestController
 @RequestMapping("api/customers")
@@ -24,6 +30,12 @@ public class CustomerController {
 
 	@Autowired
 	private CustomerMapper customerMapper;
+	
+	@Autowired
+	private CardFeignClient cardFeignClient;
+	
+	@Autowired
+	private LoanFeignClient loanFeignClient;
 
 	@PostMapping
 	public ResponseEntity<?> saveCustomer(@RequestBody CustomerDTO dto) {
@@ -47,6 +59,35 @@ public class CustomerController {
 		return ResponseEntity.ok(customerService.getById(customerId));
 		
 	}
+	
+	@GetMapping("customerdetail/{myCustomerId}")
+	public ResponseEntity<CustomerDetailDTO> getCustomerDetail(@PathVariable("myCustomerId") Long customerId){
+		
+		CustomerDetailDTO dto = new CustomerDetailDTO();
+		Customer customer = customerService.getById(customerId);	
+		
+		if(customer == null) {
+			throw new RuntimeException("No customer found with this id");
+		}
+		
+//		we want to convert from customer to customerDTO 	
+		
+		CustomerDTO customerDTO = customerMapper.toCustomerDTO(customer);
+		
+		List<LoanResponseDTO> loanInfo = loanFeignClient.getLoanInfo(customerId);
+		List<CardResponseDTO> cardInfo = cardFeignClient.getCardInfo(customerId);
+		
+		
+		dto.setCustomer(customerDTO);
+		dto.setLoans(loanInfo);
+		dto.setCards(cardInfo);
+		
+	
+		
+		return ResponseEntity.ok(dto);
+		
+	}
+	
 	
 
 }
