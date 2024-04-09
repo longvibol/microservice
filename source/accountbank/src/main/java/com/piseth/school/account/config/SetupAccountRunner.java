@@ -21,8 +21,7 @@ public class SetupAccountRunner implements CommandLineRunner{
 	private final AccountRepository accountRepository;
 
 	@Override
-	public void run(String... args) throws Exception {
-		
+	public void run(String... args) throws Exception {	
 		
 
 		Customer customer = new Customer();
