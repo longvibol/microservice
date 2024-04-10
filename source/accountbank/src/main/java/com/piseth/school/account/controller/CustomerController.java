@@ -72,17 +72,23 @@ public class CustomerController {
 		
 //		we want to convert from customer to customerDTO 	
 		
-		CustomerDTO customerDTO = customerMapper.toCustomerDTO(customer);
-		
+		CustomerDTO customerDTO = customerMapper.toCustomerDTO(customer);		
 		List<LoanResponseDTO> loanInfo = loanFeignClient.getLoanInfo(customerId);
 		List<CardResponseDTO> cardInfo = cardFeignClient.getCardInfo(customerId);
 		
+		/*Below where we want to show : 
+		private CustomerDTO customer;
+		private List<CardResponseDTO> cards;
+		private List<LoanResponseDTO> loans;
+		
+		*/
 		
 		dto.setCustomer(customerDTO);
 		dto.setLoans(loanInfo);
 		dto.setCards(cardInfo);
 		
 	
+//		dto : is the CustomerDetail we want to set of output
 		
 		return ResponseEntity.ok(dto);
 		

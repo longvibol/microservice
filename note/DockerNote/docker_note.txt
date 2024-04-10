@@ -96,9 +96,34 @@ services:
 networks:
   piseth-network:
 ------------------
+
 start container in docker-compose: docker-compose up
 stop : docker-compose stop
 Log Explorer extension docker desktop to check log 
+
+
+- docker image prune -a = remove remove container that not related to images running 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

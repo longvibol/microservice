@@ -1,7 +1,5 @@
 package com.piseth.school.account.dto;
 
-import java.time.LocalDate;
-
 import lombok.Data;
 
 @Data

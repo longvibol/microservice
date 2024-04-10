@@ -8,15 +8,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.piseth.school.account.dto.LoanResponseDTO;
 
-@FeignClient(name="loan")
+@FeignClient(name = "loan")
+//@FeignClient(name = "loan", url = "http://localhost:8090")
 public interface LoanFeignClient {
 
 //	create card : GET: localhost:8070/api/loans/1 = we need to create the same responde we get 
 	@GetMapping("/api/loans/{customerId}")
 	List<LoanResponseDTO> getLoanInfo(@PathVariable Long customerId);
-	// we create it base on loan controller find by customerID  
-	
-	
-
-	
+	// we create it base on loan controller find by customerID
 }
