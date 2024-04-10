@@ -1,14 +1,14 @@
 version: "3.8"
 services:
   configserver:
-    image: pisethbank/configserver:latest
+    image: configserver:latest
     mem_limit: 700m
     ports:
       - "8000:8071"
     networks:
       - pisethnetwork
   eurekaserver:
-    image: pisethbank/eurekaserver:latest
+    image: eurekaserver:latest
     mem_limit: 700m
     ports:
       - "9000:9000"
@@ -24,7 +24,7 @@ services:
         window: 120s
     environment: 
       SPRING_PROFILES_ACTIVE: default
-      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
   mongodb:
     image: mvertes/alpine-mongo:latest
     ports:
@@ -32,7 +32,7 @@ services:
     networks:
       - pisethnetwork
   account:
-    image: pisethbank/account:latest
+    image: account:latest
     mem_limit: 700m
     ports:
       - "7000:8080"
@@ -49,10 +49,10 @@ services:
         window: 120s
     environment: 
       SPRING_PROFILES_ACTIVE: default
-      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9000/eureka/
   loan:
-    image: pisethbank/loan:latest
+    image: loan:latest
     mem_limit: 700m
     ports:
       - "6000:8090"
@@ -70,11 +70,11 @@ services:
         window: 120s
     environment: 
       SPRING_PROFILES_ACTIVE: default
-      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9000/eureka/
       MONGODB_HOST_NAME: mongodb
   card:
-    image: pisethbank/card:latest
+    image: card:latest
     mem_limit: 700m
     ports:
       - "5000:8070"
@@ -92,7 +92,7 @@ services:
         window: 120s
     environment: 
       SPRING_PROFILES_ACTIVE: default
-      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9000/eureka/
       MONGODB_HOST_NAME: mongodb    
 networks:
