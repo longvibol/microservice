@@ -26,7 +26,7 @@ services:
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
   postgres:
-    image: postgres:14
+    image: postgres:latest
     environment:
       - POSTGRES_USER=account
       - POSTGRES_PASSWORD=account123
@@ -44,13 +44,13 @@ services:
         max_attempts: 3
         window: 120s  
   pg-admin:
-    image: dpage/pgadmin4:6
+    image: dpage/pgadmin4:latest
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@email.com
       - PGADMIN_DEFAULT_PASSWORD=admin
       - PGADMIN_LISTEN_PORT=5151
     ports:
-      - "5050:5050"
+      - "5151:5151"
   
   mongodb:
     image: mvertes/alpine-mongo:latest
@@ -79,6 +79,7 @@ services:
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9000/eureka/
+      POSTGRES_HOST_NAME: postgres
   loan:
     image: loan:latest
     mem_limit: 700m
