@@ -6,14 +6,20 @@ services:
     ports:
       - "8000:8071"
     networks:
-      - pisethnetwork
+      pisethnetwork:
+        aliases:
+          - configserver
+        
   eurekaserver:
     image: eurekaserver:latest
     mem_limit: 700m
     ports:
       - "9000:9000"
     networks:
-      - pisethnetwork
+      pisethnetwork:
+       aliases:
+          - eurekaserver
+       
     depends_on: 
       - configserver
     deploy:
@@ -25,6 +31,7 @@ services:
     environment: 
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
+
   postgres:
     image: postgres:latest
     environment:
@@ -34,7 +41,9 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - pisethnetwork
+      pisethnetwork:
+        aliases:
+          - postgres
     depends_on: 
       - configserver
     deploy:
@@ -43,6 +52,7 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s  
+
   pg-admin:
     image: dpage/pgadmin4:latest
     environment:
@@ -51,20 +61,29 @@ services:
       - PGADMIN_LISTEN_PORT=5151
     ports:
       - "5151:5151"
+    networks:
+      pisethnetwork:   
+         aliases:
+          - pgadmin  
   
   mongodb:
     image: mvertes/alpine-mongo:latest
     ports:
       - "7777:27017"
     networks:
-      - pisethnetwork
+      pisethnetwork:
+        aliases: 
+          - mongodb
+  
   account:
     image: account:latest
     mem_limit: 700m
     ports:
       - "7000:8080"
     networks:
-      - pisethnetwork
+      pisethnetwork:
+        aliases:
+          - account 
     depends_on: 
       - configserver
       - eurekaserver
@@ -80,13 +99,17 @@ services:
       SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9000/eureka/
       POSTGRES_HOST_NAME: postgres
+
   loan:
     image: loan:latest
     mem_limit: 700m
     ports:
       - "6000:8090"
     networks:
-      - pisethnetwork
+      pisethnetwork:
+        aliases:
+          - loan
+
     depends_on: 
       - configserver
       - eurekaserver
@@ -102,13 +125,16 @@ services:
       SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9000/eureka/
       MONGODB_HOST_NAME: mongodb
+
   card:
     image: card:latest
     mem_limit: 700m
     ports:
       - "5000:8070"
     networks:
-      - pisethnetwork
+      pisethnetwork:
+        aliases:
+          - card
     depends_on: 
       - configserver
       - eurekaserver

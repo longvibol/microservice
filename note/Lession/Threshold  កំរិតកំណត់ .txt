@@ -15,7 +15,7 @@ Build our service one by one in the docoker from the docker file inside the appl
 >>docker build . -t card : 5000:8070
 
 
--------------- Create Mongo in Docker
+-------------- Create Mongo in Docker : 
 
 mvn clean package
 
