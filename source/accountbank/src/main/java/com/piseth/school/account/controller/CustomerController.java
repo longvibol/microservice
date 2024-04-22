@@ -22,6 +22,8 @@ import com.piseth.school.account.service.client.CardFeignClient;
 import com.piseth.school.account.service.client.LoanFeignClient;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 
 @RestController
 @RequestMapping("api/customers")
@@ -62,7 +64,8 @@ public class CustomerController {
 
 	}
 
-	@CircuitBreaker(name = "customerDetailSuport", fallbackMethod = "getCustomerDetailDefault")
+	//@CircuitBreaker(name = "customerDetailSuport", fallbackMethod = "getCustomerDetailDefault")
+	@Retry(name = "retryCustomerDetail", fallbackMethod = "getCustomerDetailDefault")
 	@GetMapping("customerdetail/{myCustomerId}")
 	public ResponseEntity<CustomerDetailDTO> getCustomerDetail(@PathVariable("myCustomerId") Long customerId) {
 
@@ -111,6 +114,16 @@ public class CustomerController {
 		System.out.println("Expection show = " +e);
 		return ResponseEntity.ok(dto);
 
+	}
+	
+	@GetMapping("/sayHello")
+	@RateLimiter(name = "sayHelloLimiter", fallbackMethod = "sayHi")
+	public String sayHello() {
+		return "Hello, welcome to PisethBank";
+	}
+	
+	public String sayHi(Throwable t) {
+		return "Call back HI, welcome to PisethBank";
 	}
 
 }

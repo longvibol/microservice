@@ -61,6 +61,89 @@ public ResponseEntity<CustomerDetailDTO> getCustomerDetailDefault(@PathVariable(
 
 =========================== End 
 
++ Automatic retry in system 
+
+** Retry Pattern : យើងអោយ service នឹងវាធ្វើការហៅម្តងហើយម្តងទៀតទៅតាមចំនួនយើងបានកំណត់
+ដូចជាក្នុងករណី ណេតវើកវា ដាច់
+
+- maxAttempts ធ្វើប៉ុន្មានដង់
+- waitDuration អោយវាចាំសិន
+- retryExceptions លក្ខណបែបណាបានអោយវា ធ្វើការ( ពេលវាជួយ ​error អ្វីមួយ)
+- ignoreExceptions លក្ខណកុំអោយវាធ្វើ
+
+1. Setup : Add property : 
+
+#Register Retry in Actuator 
+resilience4j.retry.configs.default.registerHealthIndicator= true
+resilience4j.retry.instances.retryCustomerDetail.maxRetryAttempts= 3
+resilience4j.retry.instances.retryCustomerDetail.waitDuration= 2000
+
+2. Add Controler where we call to another service : 
+
+@Retry(name = "retryCustomerDetail", fallbackMethod = "getCustomerDetailDefault")
+
+
+*** Rate Limited Pattern យើងកំណត់ចំនួន ហៅលើ service របស់យើងក្នុងរយៈពេលកំណត់ណាមួយ 
+Stop Overloading to prevend: DDos Attached 
+
+- timeoutDuration រយៈពេលទទួល ហៅ (៣០ វិនាទីចាំទទួលបន្ទាប់ពេលវាហៅពេញ)​
+- limitForPeriod រយៈពេលកំណត់នឹងចង់ទទួលប៉ុន្មាន ការហៅ
+- limiRefreshPeriod : reset period (បន្ទាប់ពីវាមិនទទួល ការហៅ ហើយ វានឹង រាប់ឡើងវិញ បើដល់ចំនួនកំណត់វា ឈប់ទទួល ការហៅទៀត)​
+
+
+Step to do : 
+
+1 . Add property :
+
+#rateLimiter 
+resilience4j.ratelimiter.configs.default.registerHealthIndicator= true
+resilience4j.ratelimiter.instances.sayHelloLimiter.timeoutDuration=5000
+resilience4j.ratelimiter.instances.sayHelloLimiter.limitRefreshPeriod=5000
+resilience4j.ratelimiter.instances.sayHelloLimiter.limitForPeriod=1
+
+2. Controller 
+
+@GetMapping("/sayHello")
+	@RateLimiter(name = "sayHelloLimiter", fallbackMethod = "sayHi")
+	public String sayHello() {
+		return "Hello, welcome to PisethBank";
+	}
+	
+	public String sayHi(Throwable t) {
+		return "Call back HI, welcome to PisethBank";
+	}
+
+
+
+================ End
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
