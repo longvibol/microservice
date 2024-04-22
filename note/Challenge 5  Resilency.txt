@@ -75,13 +75,51 @@ resilience4j.circuitbreaker.instances."name of in circute braker we put ".minimu
 - waitDurationInOpenState= 30000 (1 s = 1000milisecond)  = 30 វិនាទី
 - permittedNumberOfCallsInHalfOpenState=2​​ = ពេលវាស្ថិតនៅ halfopen static ory vir yuk ta 2 te 
 
+
+
+
+============= Checkd it is working or not in the Circuit breaker
+
+"circuitbreakerevents": {
+"href": "http://192.168.1.167:8080/actuator/circuitbreakerevents",
+"templated": false
+},
+
+
+===============  flow 
+1. ពេលហៅលើទីមួយហើយវាមិនមានការឆ្លើយតបពី Service 
+
+"circuitBreakerName": "customerDetailSuport",
+"type": "ERROR",'
+
+វាចេញ Error 3 x Time 
+
+Then it will change the status to : FAILURE_RATE_EXCEEDED
+
+"circuitBreakerName": "customerDetailSuport",
+"type": "FAILURE_RATE_EXCEEDED",  
+
+
+ពេលយើង ហៅវាទៀតវាចេញ : TATE_TRANSITION
+
+
+"circuitBreakerName": "customerDetailSuport",
+"type": "STATE_TRANSITION",
+
+2. Then It will become open Circuit : Fail fast : NOT_PERMITTED
+
+"circuitBreakerName": "customerDetailSuport",
+"type": "NOT_PERMITTED",
+
+
+3. When we restart the service it will change to : 
+
+
+SUCCESS(1) -> STATE_TRANSITION(1) -> SUCCESS
+
+
+================  
  
-
-
-
-
-
-
 
 
 
