@@ -45,7 +45,85 @@ spring cloud gateway the same as Spring developer.
 
 ** Pre Filter : validation->include & exclude list-> authen&autoh->Rate limit->Day.....
 ** Post Filter : log time process and user log 
-** 
+
+
+====================== Step To create gateway server =================
+
+1. Spring Inizial 
+
+Add: 
+
+- actuator
+- devtools
+- eureka-client
+- starter-config
+
+2. Configure application.properties: Connect from gateway server to eureka serve 
+
+spring.application.name=gatewayserver
+
+spring.config.import=optional:configserver:http://localhost:8071/
+
+management.endpoints.web.exposure.include=*
+
+## Configuring info endpoint
+info.app.name=Gateway Server Microservice
+info.app.description=Piseth Bank Gateway Server Application
+info.app.version=1.0.0
+management.info.env.enabled = true
+management.endpoint.gateway.enabled=true
+spring.cloud.gateway.discovery.locator.enabled=true
+#spring.cloud.gateway.discovery.locator.lowerCaseServiceId=true
+
+
+3. Add configure server with Gateway server 
+- create file : gatewayserver.properties
+
+server.port=8072
+
+eureka.instance.preferIpAddress=true
+eureka.client.registerWithEureka=true
+eureka.client.fetchRegistry=true
+eureka.client.serviceUrl.defaultZone=http://localhost:9000/eureka/
+
+
+4. Testing : http://localhost:8072/actuator/gateway/routes
+
+"predicate": "Paths: [/ACCOUNT/**], match trailing slash: true",
+"metadata": {
+"management.port": "8080"
+},
+"route_id": "ReactiveCompositeDiscoveryClient_ACCOUNT",
+"filters": [
+"[[RewritePath /ACCOUNT/?(?<remaining>.*) = '/${remaining}'], order = 1]"
+],
+"uri": "lb://ACCOUNT",
+"order": 0
+},
+{
+"predicate": "Paths: [/LOAN/**], match trailing slash: true",
+"metadata": {
+"management.port": "8090"
+},
+"route_id": "ReactiveCompositeDiscoveryClient_LOAN",
+"filters": [
+"[[RewritePath /LOAN/?(?<remaining>.*) = '/${remaining}'], order = 1]"
+],
+"uri": "lb://LOAN",
+"order": 0
+},
+
+5. teshting with Postgraes
+
+localhost:8072/ACCOUNT/api/accounts
+
+We can customize latter on ! 
+
+
+
+
+
+
 
 
 
