@@ -1,0 +1,133 @@
+Challenge 6  : Routing, Cross Cutting Concern 
+
+- Signle entry point problem 
+- gateKeeper need to check 
+- Cross Cutting Concern:  logging, auditing, tracing, security 
+- Url have Static and dynamic (យើងអាច Rout ទៅយកversion ជាក់លាក់ណាមួយបាន)
+
+*** Use Edge Server or API Gateway *** 
+
+Why we need API Gateway?
+1. Maintain signle Entrypoint : ទៅរកតែម្នាក់នឹង
+2. Cross Cutting Concern : 
+save time: no need to have duplicate code, inconsistence behavior
+- we should be the comman libary to apply standat 
+
+* Regression Test ធ្វើតេស្តឡើងវិញ
+* Regression Bug: first work --> add new feature --> Not working 
+
+3. Route based on custom requirment: Dynmic routing 
+
+* cascading failures : fail after one service is fail.
+* cascading delete: if we delete strong entity after the below entiy also delet) 
+* downstream services : សើវេស ហៅតគ្នា
+
+==> Authentication and authorization mechanisms can be implemented at the edage server 
+==> Full control 
+
+
+--------------------------------------------
+
+API Gateways is the server ==> How to implement it: we use Spring Cloud Gateway
+
+- Stream line by emphasizing ease and efficiency. 
+- It use reactive framework (reactive = non blocking) ល្បឿនលឿន
+- Reactive don't block thread (request) 
+- វានៅចន្លោះ រវាង អ្នក Request និង Resource 
+- Inbound traffice Request ចូលមកនិងឆ្លើងកាត់ API Gateway នឹង
+- API gateway ជា concerp and spring cloud gateway ជា Implementation 
+spring cloud gateway the same as Spring developer. 
+
+==> Spring cloud gateway is the middle of the request and resource : we can intercepts, analyzes, modifies every request. 
+
+
+1. Client -> Gateway handler -> Predicate -> Pre Filter -> Post Filter->Resource-> Post Filter> Gateway handlter -> Client 
+
+** Pre Filter : validation->include & exclude list-> authen&autoh->Rate limit->Day.....
+** Post Filter : log time process and user log 
+** 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
