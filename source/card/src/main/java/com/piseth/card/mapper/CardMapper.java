@@ -1,7 +1,5 @@
 package com.piseth.card.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingConstants;
 import org.springframework.stereotype.Component;
 
 import com.piseth.card.dto.CardDTO;
