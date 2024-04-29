@@ -22,9 +22,7 @@ import com.piseth.school.account.service.CustomerService;
 import com.piseth.school.account.service.client.CardFeignClient;
 import com.piseth.school.account.service.client.LoanFeignClient;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
-import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -67,70 +65,53 @@ public class CustomerController {
 
 	}
 
-	//@CircuitBreaker(name = "customerDetailSuport", fallbackMethod = "getCustomerDetailDefault")
-	//@Retry(name = "retryCustomerDetail", fallbackMethod = "getCustomerDetailDefault")
-	@GetMapping("customerDetail/{myCustomerId}")
-	public ResponseEntity<CustomerDetailDTO> getCustomerDetail(
-			@RequestHeader("vibolbank-correlation-id") String correlationId,
-			@PathVariable("myCustomerId") Long customerId) {
-		
-		log.debug("Correlation ID Found In ACCOUNT= {}",correlationId);
-
-		CustomerDetailDTO dto = new CustomerDetailDTO();
-		Customer customer = customerService.getById(customerId);
-
-		if (customer == null) {
-			throw new RuntimeException("No customer found with this id");
+		//@CircuitBreaker(name = "customerDetailSupport", fallbackMethod = "getCustomerDetailDefault")
+		//@Retry(name = "retryCustomerDetail", fallbackMethod = "getCustomerDetailDefault")
+		@GetMapping("customerDetail/{myCustomerId}")
+		public ResponseEntity<CustomerDetailDTO> getCustomerDetail(
+				@RequestHeader("pisethbank-correlation-id") String correlationId,
+				@PathVariable("myCustomerId") Long customerId){
+			//System.out.println("=========== ++Account Service++ ==============");
+			log.debug("Correlation id found: {}", correlationId);
+			
+			CustomerDetailDTO dto = new CustomerDetailDTO();
+			Customer customer = customerService.getById(customerId);
+			if(customer == null) {
+				throw new RuntimeException("No customer found with this id");
+			}
+			CustomerDTO customerDTO = customerMapper.toCustomerDTO(customer);
+			
+			List<LoanResponseDTO> loanInfo = loanFeignClient.getLoanInfo(correlationId, customerId);
+			List<CardResponseDTO> cardInfo = cardFeignClient.getCardInfo(correlationId, customerId);
+			
+			dto.setCustomer(customerDTO);
+			dto.setLoans(loanInfo);
+			dto.setCards(cardInfo);
+			
+			
+			return ResponseEntity.ok(dto);
 		}
-
-//		we want to convert from customer to customerDTO 	
-
-		CustomerDTO customerDTO = customerMapper.toCustomerDTO(customer);
-		List<LoanResponseDTO> loanInfo = loanFeignClient.getLoanInfo(correlationId,customerId);
-		List<CardResponseDTO> cardInfo = cardFeignClient.getCardInfo(correlationId,customerId);
-
-		/*
-		 * Below where we want to show : private CustomerDTO customer; private
-		 * List<CardResponseDTO> cards; private List<LoanResponseDTO> loans;
-		 * 
-		 */
-
-		dto.setCustomer(customerDTO);
-		dto.setLoans(loanInfo);
-		dto.setCards(cardInfo);
-
-//		dto : is the CustomerDetail we want to set of output
-
-		return ResponseEntity.ok(dto);
-
-	}
-
-	public ResponseEntity<CustomerDetailDTO> getCustomerDetailDefault(@PathVariable("myCustomerId") Long customerId,
-			Throwable e) {
-
-		CustomerDetailDTO dto = new CustomerDetailDTO();
-		Customer customer = customerService.getById(customerId);
-
-		if (customer == null) {
-			throw new RuntimeException("No customer found with this id");
-		}
-
-		CustomerDTO customerDTO = customerMapper.toCustomerDTO(customer);
-		dto.setCustomer(customerDTO);
 		
-		System.out.println("Expection show = " +e);
-		return ResponseEntity.ok(dto);
-
-	}
-	
-	@GetMapping("/sayHello")
-	@RateLimiter(name = "sayHelloLimiter", fallbackMethod = "sayHi")
-	public String sayHello() {
-		return "Hello, welcome to PisethBank";
-	}
-	
-	public String sayHi(Throwable t) {
-		return "Call back HI, welcome to PisethBank";
-	}
+		public ResponseEntity<CustomerDetailDTO> getCustomerDetailDefault(@PathVariable("myCustomerId") Long customerId, Throwable e){
+			CustomerDetailDTO dto = new CustomerDetailDTO();
+			Customer customer = customerService.getById(customerId);
+			if(customer == null) {
+				throw new RuntimeException("No customer found with this id");
+			}
+			CustomerDTO customerDTO = customerMapper.toCustomerDTO(customer);
+			dto.setCustomer(customerDTO);
+			return ResponseEntity.ok(dto);
+		}
+		
+		
+		@GetMapping("/sayHello")
+		@RateLimiter(name = "sayHelloLimiter", fallbackMethod = "sayHi")
+		public String sayHello() {
+			return "Hello, welcome to PisethBank";
+		}
+		
+		public String sayHi(Throwable t) {
+			return "Hi, welcome to PisethBank";
+		}
 
 }
