@@ -35,5 +35,5 @@ public class GatewayserverApplication {
 		            		
 		            .uri("lb://CARD")).build();
 	}
-
+// update
 }
