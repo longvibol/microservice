@@ -1,5 +1,7 @@
 package com.piseth.bank.gatewayserver;
 
+import java.time.LocalDateTime;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gateway.route.RouteLocator;
@@ -14,22 +16,24 @@ public class GatewayserverApplication {
 	}
 	
 	@Bean
-	public RouteLocator myRoute(RouteLocatorBuilder builder) {
-		return builder.routes()
-				.route(p -> p
-						.path("/vibolbank/account/**")
-						.filters(f ->f.rewritePath("/vibolbank/account/(?<segment>.*","/${segment}"))
-						.uri("lb://ACCOUNT")).
-				route(p -> p
-						.path("/vibolbank/loan/**")
-						.filters(f ->f.rewritePath("/vibolbank/loan/(?<segment>.*","/${segment}"))
-						.uri("lb://LOAN")).
-				
-				route(p -> p
-						.path("/vibolbank/card/**")
-						.filters(f ->f.rewritePath("/vibolbank/card/(?<segment>.*","/${segment}"))
-						.uri("lb://CARD")).build();			
-						
+	public RouteLocator myRoutes(RouteLocatorBuilder builder) {
+	    return builder.routes()
+	        .route(p -> p
+	            .path("/vibolbank/account/**")
+	            .filters(f -> f.rewritePath("/vibolbank/account/(?<segment>.*)","/${segment}")
+	            .addResponseHeader("X-RESPONSE-TIME", LocalDateTime.now().toString()))
+	            		
+	            .uri("lb://ACCOUNT")).
+	        route(p -> p
+		            .path("/vibolbank/loan/**")
+		            .filters(f -> f.rewritePath("/vibolbank/loan/(?<segment>.*)","/${segment}"))
+		            		
+		            .uri("lb://LOAN")).
+	        route(p -> p
+		            .path("/vibolbank/card/**")
+		            .filters(f -> f.rewritePath("/vibolbank/card/(?<segment>.*)","/${segment}"))
+		            		
+		            .uri("lb://CARD")).build();
 	}
 
 }
