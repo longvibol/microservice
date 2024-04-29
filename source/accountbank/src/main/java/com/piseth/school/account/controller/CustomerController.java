@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,7 +25,9 @@ import com.piseth.school.account.service.client.LoanFeignClient;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("api/customers")
 public class CustomerController {
@@ -65,9 +68,13 @@ public class CustomerController {
 	}
 
 	//@CircuitBreaker(name = "customerDetailSuport", fallbackMethod = "getCustomerDetailDefault")
-	@Retry(name = "retryCustomerDetail", fallbackMethod = "getCustomerDetailDefault")
-	@GetMapping("customerdetail/{myCustomerId}")
-	public ResponseEntity<CustomerDetailDTO> getCustomerDetail(@PathVariable("myCustomerId") Long customerId) {
+	//@Retry(name = "retryCustomerDetail", fallbackMethod = "getCustomerDetailDefault")
+	@GetMapping("customerDetail/{myCustomerId}")
+	public ResponseEntity<CustomerDetailDTO> getCustomerDetail(
+			@RequestHeader("vibolbank-correlation-id") String correlationId,
+			@PathVariable("myCustomerId") Long customerId) {
+		
+		log.debug("Correlation ID Found In ACCOUNT= {}",correlationId);
 
 		CustomerDetailDTO dto = new CustomerDetailDTO();
 		Customer customer = customerService.getById(customerId);
@@ -79,8 +86,8 @@ public class CustomerController {
 //		we want to convert from customer to customerDTO 	
 
 		CustomerDTO customerDTO = customerMapper.toCustomerDTO(customer);
-		List<LoanResponseDTO> loanInfo = loanFeignClient.getLoanInfo(customerId);
-		List<CardResponseDTO> cardInfo = cardFeignClient.getCardInfo(customerId);
+		List<LoanResponseDTO> loanInfo = loanFeignClient.getLoanInfo(correlationId,customerId);
+		List<CardResponseDTO> cardInfo = cardFeignClient.getCardInfo(correlationId,customerId);
 
 		/*
 		 * Below where we want to show : private CustomerDTO customer; private
