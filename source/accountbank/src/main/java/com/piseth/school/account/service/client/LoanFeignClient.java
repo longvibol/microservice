@@ -18,7 +18,7 @@ public interface LoanFeignClient {
 	@GetMapping("/api/loans/{customerId}")
 	
 	List<LoanResponseDTO> getLoanInfo(
-			@RequestHeader("vibolbank-correlation-id") String correlationId,
+			@RequestHeader("pisethbank-correlation-id") String correlationId,
 			@PathVariable("myCustomerId") Long customerId);
 	
 	// we create it base on loan controller find by customerID

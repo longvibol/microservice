@@ -18,7 +18,7 @@ public interface CardFeignClient {
 	
 	List<CardResponseDTO> getCardInfo(
 			
-			@RequestHeader("vibolbank-correlation-id") String correlationId,
+			@RequestHeader("pisethbank-correlation-id") String correlationId,
 			@PathVariable("myCustomerId") Long customerId);
 	
 	// we create it base on card controller find by customerID  

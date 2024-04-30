@@ -24,6 +24,7 @@ public class GatewayserverApplication {
 	            .addResponseHeader("X-RESPONSE-TIME", LocalDateTime.now().toString()))
 	            		
 	            .uri("lb://ACCOUNT")).
+	      
 	        route(p -> p
 		            .path("/vibolbank/loan/**")
 		            .filters(f -> f.rewritePath("/vibolbank/loan/(?<segment>.*)","/${segment}")

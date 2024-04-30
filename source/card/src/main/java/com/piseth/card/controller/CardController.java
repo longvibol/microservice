@@ -44,14 +44,12 @@ public class CardController {
 	}
 	
 	@GetMapping("{customerId}")
-	public ResponseEntity<?> getByCustomerId(			
-			@RequestHeader("vibolbank-correlation-id") String correlationId,
-			@PathVariable("myCustomerId") Long customerId)
-	{
-		log.debug("Correlation ID Found In CARD= {}",correlationId);
+	public ResponseEntity<?> getByCustomerId(
+			@RequestHeader("pisethbank-correlation-id") String correlationId,
+			@PathVariable Long customerId){
+		log.debug("Correlation id found: {}", correlationId);
 		return ResponseEntity.ok(cardService.getByCustomerId(customerId));
 	}
-	
 	
 
 }
