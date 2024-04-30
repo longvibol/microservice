@@ -23,5 +23,6 @@ public class Account {
 	private String accountType;
 	private String branchAddress;
 	private LocalDate createDate;
+	}
 
-}
+

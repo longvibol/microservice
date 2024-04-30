@@ -24,14 +24,17 @@ public class GatewayserverApplication {
 	            .addResponseHeader("X-RESPONSE-TIME", LocalDateTime.now().toString()))
 	            		
 	            .uri("lb://ACCOUNT")).
+	      
 	        route(p -> p
 		            .path("/vibolbank/loan/**")
-		            .filters(f -> f.rewritePath("/vibolbank/loan/(?<segment>.*)","/${segment}"))
+		            .filters(f -> f.rewritePath("/vibolbank/loan/(?<segment>.*)","/${segment}")
+		            .addResponseHeader("X-RESPONSE-TIME", LocalDateTime.now().toString()))
 		            		
 		            .uri("lb://LOAN")).
 	        route(p -> p
 		            .path("/vibolbank/card/**")
-		            .filters(f -> f.rewritePath("/vibolbank/card/(?<segment>.*)","/${segment}"))
+		            .filters(f -> f.rewritePath("/vibolbank/card/(?<segment>.*)","/${segment}")
+		            .addResponseHeader("X-RESPONSE-TIME", LocalDateTime.now().toString()))
 		            		
 		            .uri("lb://CARD")).build();
 	}

@@ -40,9 +40,7 @@ public class SetupAccountRunner implements CommandLineRunner{
 		account.setBranchAddress("Phnom Penh");
 		account.setCreateDate(LocalDate.now());
 		account.setCustomer(customer);
-		
 		accountRepository.save(account);
-		
 		log.info("Account created");
 		
 	}
