@@ -15,11 +15,10 @@ public interface LoanFeignClient {
 
 //	create card : GET: localhost:8070/api/loans/1 = we need to create the same responde we get 
 	
-	@GetMapping("/api/loans/{customerId}")
-	
+	@GetMapping("/api/loans/{customerId}")	
 	List<LoanResponseDTO> getLoanInfo(
 			@RequestHeader("pisethbank-correlation-id") String correlationId,
-			@PathVariable("myCustomerId") Long customerId);
+			@PathVariable Long customerId);
 	
 	// we create it base on loan controller find by customerID
 }
