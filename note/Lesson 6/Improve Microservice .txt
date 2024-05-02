@@ -1,0 +1,11 @@
+Improve Microservice: 
+
+- Check heath in side the docker compose Liveness (Up or not) and readiness (Can it get the request or not) 
+- Refresh Config server: បើយើងធ្វើការផ្លាស់ប្តូរ config server វាទាមទារអោយយើងធ្វើការ Restart Service ដែលភ្ជាប់ទៅ Configer srever all 
+==> Mostly we put the config file in Github. 
+
+https://www.youtube.com/watch?v=Q12c0ajIXAc&list=PLgTdwF3gS2V0CkkQWoeVB5yea9w9NU1xD&index=27&ab_channel=Piseth
+
+
+
+https://github.com/longvibol/bank-config-server.git

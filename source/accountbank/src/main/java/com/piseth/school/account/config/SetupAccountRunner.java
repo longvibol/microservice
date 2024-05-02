@@ -41,7 +41,7 @@ public class SetupAccountRunner implements CommandLineRunner{
 		account.setCreateDate(LocalDate.now());
 		account.setCustomer(customer);
 		accountRepository.save(account);
-		log.info("Account created");
+		log.debug("Account create");
 		
 	}
 
