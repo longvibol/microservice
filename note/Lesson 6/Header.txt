@@ -86,8 +86,17 @@ https://docs.spring.io/spring-framework/reference/web/webflux.html
 
 - It return type only one 
 - Need to lean Java Reactive 
-- 
 
+
+Note: 
+
+Mono<Void> = មានន័យថា មួយ signle object 
+Flux= collection data 
+
+
+======================= Generatate Auto Tracking Number
+
+Think about the logic 
 
 
 

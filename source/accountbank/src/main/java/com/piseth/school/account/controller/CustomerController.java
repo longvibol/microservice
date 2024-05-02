@@ -64,9 +64,10 @@ public class CustomerController {
 	public ResponseEntity<CustomerDetailDTO> getCustomerDetail(
 			@RequestHeader("pisethbank-correlation-id") String correlationId,
 			@PathVariable("myCustomerId") Long customerId){
+		
 		//System.out.println("=========== ++Account Service++ ==============");
 		//log.debug("Correlation id found: {}", correlationId);
-		log.debug("fetchCustomerDetail method start");
+		log.debug("fetchCustomerDetail method start {} ", correlationId);
 		
 		CustomerDetailDTO dto = new CustomerDetailDTO();
 		Customer customer = customerService.getById(customerId);
@@ -82,7 +83,7 @@ public class CustomerController {
 		dto.setLoans(loanInfo);
 		dto.setCards(cardInfo);
 		
-		log.debug("fetchCustomerDetail method end");
+		log.debug("fetchCustomerDetail method end {}", correlationId);
 		return ResponseEntity.ok(dto);
 	}
 	
@@ -91,6 +92,7 @@ public class CustomerController {
 			@RequestHeader("pisethbank-correlation-id") String correlationId,
 			@PathVariable("myCustomerId") Long customerId,
 			Throwable e){
+		
 		CustomerDetailDTO dto = new CustomerDetailDTO();
 		Customer customer = customerService.getById(customerId);
 		if(customer == null) {
