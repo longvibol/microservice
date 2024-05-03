@@ -66,10 +66,14 @@ management.endpoint.health.probes.enabled=true
 			</plugin>
 
 Note: 
-${project.artifactId}:v2
+<image>pisethbank/${project.artifactId}:v2</image>
+
+- pisethbank is the name 
 - project : parent 
 - artifactId : name of the project = account 
 -v2 = tag version 
+
+>> mvn compile jib:dockerBuild 
 
 
 
