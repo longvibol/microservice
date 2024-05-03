@@ -35,11 +35,13 @@ public class CustomerController {
 	@Autowired
 	private CustomerMapper customerMapper;
 	
-	@Autowired
-	private CardFeignClient cardFeignClient;
+//	@Autowired
+//	private CardFeignClient cardFeignClient;
+//	
+//	@Autowired
+//	private LoanFeignClient loanFeignClient;
 	
-	@Autowired
-	private LoanFeignClient loanFeignClient;
+
 	
 	@PostMapping
 	public ResponseEntity<?> saveCustomer(@RequestBody CustomerDTO dto){
@@ -76,12 +78,12 @@ public class CustomerController {
 		}
 		CustomerDTO customerDTO = customerMapper.toCustomerDTO(customer);
 		
-		List<LoanResponseDTO> loanInfo = loanFeignClient.getLoanInfo(correlationId, customerId);
-		List<CardResponseDTO> cardInfo = cardFeignClient.getCardInfo(correlationId, customerId);
-		
-		dto.setCustomer(customerDTO);
-		dto.setLoans(loanInfo);
-		dto.setCards(cardInfo);
+//		List<LoanResponseDTO> loanInfo = loanFeignClient.getLoanInfo(correlationId, customerId);
+//		List<CardResponseDTO> cardInfo = cardFeignClient.getCardInfo(correlationId, customerId);
+//		
+//		dto.setCustomer(customerDTO);
+//		dto.setLoans(loanInfo);
+//		dto.setCards(cardInfo);
 		
 		log.debug("fetchCustomerDetail method end {}", correlationId);
 		return ResponseEntity.ok(dto);
