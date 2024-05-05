@@ -12,6 +12,8 @@ import com.piseth.school.account.dto.LoanResponseDTO;
 @FeignClient(name = "loan")
 public interface LoanFeignClient {
 	@GetMapping("/api/loans/{customerId}")
-	List<LoanResponseDTO> getLoanInfo(@PathVariable Long customerId);
+	List<LoanResponseDTO> getLoanInfo(
+			@RequestHeader("pisethbank-correlation-id") String correlationId,
+			@PathVariable Long customerId);
 
 }

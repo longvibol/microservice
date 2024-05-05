@@ -41,8 +41,11 @@ public class LoanController {
 	}
 	
 	@GetMapping("{customerId}")
-	public ResponseEntity<?> getByCustomerId(@PathVariable Long customerId){
-		System.out.println("=========== Loan service is called ==============");
+	public ResponseEntity<?> getByCustomerId(
+			@RequestHeader("pisethbank-correlation-id") String correlationId,
+			@PathVariable Long customerId){
+		//System.out.println("=========== Loan service is called ==============");
+		log.debug("Correlation id found: {}", correlationId);
 		return ResponseEntity.ok(loanService.getByCustomerId(customerId));
 	}
 }

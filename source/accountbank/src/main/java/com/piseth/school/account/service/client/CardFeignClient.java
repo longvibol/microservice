@@ -13,6 +13,8 @@ import com.piseth.school.account.dto.CardResponseDTO;
 public interface CardFeignClient {
 	
 		@GetMapping("/api/cards/{customerId}")
-		List<CardResponseDTO> getCardInfo(@PathVariable Long customerId);
+		List<CardResponseDTO> getCardInfo(
+				@RequestHeader("pisethbank-correlation-id") String correlationId,
+				@PathVariable Long customerId);
 
 	}

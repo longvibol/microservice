@@ -16,6 +16,7 @@ import com.piseth.card.entity.Card;
 import com.piseth.card.mapper.CardMapper;
 import com.piseth.card.service.CardService;
 
+import jakarta.validation.constraints.AssertFalse.List;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -41,7 +42,11 @@ public class CardController {
 	}
 	
 	@GetMapping("{customerId}")
-	public ResponseEntity<?> getByCustomerId(@PathVariable Long customerId){
+	public ResponseEntity<?> getByCustomerId(
+			@RequestHeader("pisethbank-correlation-id") String correlationId,
+			@PathVariable Long customerId){
+		
+		log.debug("Correlation id found: {}", correlationId);
 		return ResponseEntity.ok(cardService.getByCustomerId(customerId));
 	}
 }
