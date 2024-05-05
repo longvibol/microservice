@@ -35,13 +35,11 @@ public class CustomerController {
 	@Autowired
 	private CustomerMapper customerMapper;
 	
-//	@Autowired
-//	private CardFeignClient cardFeignClient;
-//	
-//	@Autowired
-//	private LoanFeignClient loanFeignClient;
+	@Autowired
+	private CardFeignClient cardFeignClient;
 	
-
+	@Autowired
+	private LoanFeignClient loanFeignClient;
 	
 	@PostMapping
 	public ResponseEntity<?> saveCustomer(@RequestBody CustomerDTO dto){
@@ -61,59 +59,50 @@ public class CustomerController {
 	}
 	
 	//@CircuitBreaker(name = "customerDetailSupport", fallbackMethod = "getCustomerDetailDefault")
-	@Retry(name = "retryCustomerDetail", fallbackMethod = "getCustomerDetailDefault")	
-	@GetMapping("customerDetail/{myCustomerId}")
-	public ResponseEntity<CustomerDetailDTO> getCustomerDetail(
-			@RequestHeader("pisethbank-correlation-id") String correlationId,
-			@PathVariable("myCustomerId") Long customerId){
-		
-		//System.out.println("=========== ++Account Service++ ==============");
-		//log.debug("Correlation id found: {}", correlationId);
-		log.debug("fetchCustomerDetail method start {} ", correlationId);
-		
-		CustomerDetailDTO dto = new CustomerDetailDTO();
-		Customer customer = customerService.getById(customerId);
-		if(customer == null) {
-			throw new RuntimeException("No customer found with this id");
-		}
-		CustomerDTO customerDTO = customerMapper.toCustomerDTO(customer);
-		
-//		List<LoanResponseDTO> loanInfo = loanFeignClient.getLoanInfo(correlationId, customerId);
-//		List<CardResponseDTO> cardInfo = cardFeignClient.getCardInfo(correlationId, customerId);
-//		
-//		dto.setCustomer(customerDTO);
-//		dto.setLoans(loanInfo);
-//		dto.setCards(cardInfo);
-		
-		log.debug("fetchCustomerDetail method end {}", correlationId);
-		return ResponseEntity.ok(dto);
-	}
-	
-	public ResponseEntity<CustomerDetailDTO> getCustomerDetailDefault(
+		@Retry(name = "retryCustomerDetail", fallbackMethod = "getCustomerDetailDefault")
+		@GetMapping("customerDetail/{myCustomerId}")
+		public ResponseEntity<CustomerDetailDTO> getCustomerDetail(@PathVariable("myCustomerId") Long customerId){
+			System.out.println("=========== ++Account Service++ ==============");
+			CustomerDetailDTO dto = new CustomerDetailDTO();
+			Customer customer = customerService.getById(customerId);
+			if(customer == null) {
+				throw new RuntimeException("No customer found with this id");
+			}
+			CustomerDTO customerDTO = customerMapper.toCustomerDTO(customer);
 			
-			@RequestHeader("pisethbank-correlation-id") String correlationId,
-			@PathVariable("myCustomerId") Long customerId,
-			Throwable e){
-		
-		CustomerDetailDTO dto = new CustomerDetailDTO();
-		Customer customer = customerService.getById(customerId);
-		if(customer == null) {
-			throw new RuntimeException("No customer found with this id");
+			List<LoanResponseDTO> loanInfo = loanFeignClient.getLoanInfo(customerId);
+			List<CardResponseDTO> cardInfo = cardFeignClient.getCardInfo(customerId);
+			
+			dto.setCustomer(customerDTO);
+			dto.setLoans(loanInfo);
+			dto.setCards(cardInfo);
+			
+			
+			return ResponseEntity.ok(dto);
 		}
-		CustomerDTO customerDTO = customerMapper.toCustomerDTO(customer);
-		dto.setCustomer(customerDTO);
-		return ResponseEntity.ok(dto);
-	}
-	
-	
-	@GetMapping("/sayHello")
-	@RateLimiter(name = "sayHelloLimiter", fallbackMethod = "sayHi")
-	public String sayHello() {
-		return "Hello, welcome to PisethBank";
-	}
-	
-	public String sayHi(Throwable t) {
-		return "Hi, welcome to PisethBank";
-	}
+		
+		public ResponseEntity<CustomerDetailDTO> getCustomerDetailDefault(@PathVariable("myCustomerId") Long customerId, Throwable e){
+			CustomerDetailDTO dto = new CustomerDetailDTO();
+			Customer customer = customerService.getById(customerId);
+			if(customer == null) {
+				throw new RuntimeException("No customer found with this id");
+			}
+			CustomerDTO customerDTO = customerMapper.toCustomerDTO(customer);
+			dto.setCustomer(customerDTO);
+			return ResponseEntity.ok(dto);
+		}
+		
+		
+		@GetMapping("/sayHello")
+		@RateLimiter(name = "sayHelloLimiter", fallbackMethod = "sayHi")
+		public String sayHello() {
+			return "Hello, welcome to PisethBank";
+		}
+		
+		public String sayHi(Throwable t) {
+			return "Hi, welcome to PisethBank";
+		}
+
+
 
 }

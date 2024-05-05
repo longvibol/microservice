@@ -19,11 +19,18 @@ public class GatewayserverApplication {
 	public RouteLocator myRoutes(RouteLocatorBuilder builder) {
 	    return builder.routes()
 	        .route(p -> p
-	            .path("/vibolbank/account/**")
-	            .filters(f -> f.rewritePath("/vibolbank/account/(?<segment>.*)","/${segment}")
+	            .path("/vibolbank/customer/**")
+	            .filters(f -> f.rewritePath("/vibolbank/customer/(?<segment>.*)","/${segment}")
 	            .addResponseHeader("X-RESPONSE-TIME", LocalDateTime.now().toString()))
 	            		
-	            .uri("lb://ACCOUNT")).
+	            .uri("lb://CUSTOMER"))
+	        
+	        .route(p -> p
+		            .path("/vibolbank/account/**")
+		            .filters(f -> f.rewritePath("/vibolbank/account/(?<segment>.*)","/${segment}")
+		            .addResponseHeader("X-RESPONSE-TIME", LocalDateTime.now().toString()))
+		            		
+		            .uri("lb://ACCOUNT")).
 	      
 	        route(p -> p
 		            .path("/vibolbank/loan/**")

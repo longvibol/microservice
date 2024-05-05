@@ -22,20 +22,17 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("api/cards")
 public class CardController {
-	
+
 	@Autowired
 	private CardService cardService;
 	
 	@Autowired
 	private CardMapper cardMapper;
 	
-	
 	@PostMapping
 	public ResponseEntity<?> save(@RequestBody CardDTO dto){
-		
-		Card card = cardService.save(cardMapper.toCard(dto));
-		return ResponseEntity.status(HttpStatus.CREATED).body(card);
-		
+		Card loan = cardService.save(cardMapper.toCard(dto));
+		return ResponseEntity.status(HttpStatus.CREATED).body(loan);
 	}
 	
 	@GetMapping
@@ -44,12 +41,7 @@ public class CardController {
 	}
 	
 	@GetMapping("{customerId}")
-	public ResponseEntity<?> getByCustomerId(
-			@RequestHeader("pisethbank-correlation-id") String correlationId,
-			@PathVariable Long customerId){
-		log.debug("Correlation id found: {}", correlationId);
+	public ResponseEntity<?> getByCustomerId(@PathVariable Long customerId){
 		return ResponseEntity.ok(cardService.getByCustomerId(customerId));
 	}
-	
-
 }
