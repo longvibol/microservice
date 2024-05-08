@@ -54,6 +54,7 @@ mvertes/alpine-mongo     latest            ef364a8cf19c   5 years ago    123MB
 >> docker images 
 
 C:\Users\GE66>docker images
+
 REPOSITORY               TAG               IMAGE ID       CREATED        SIZE
 vibollong/rabbitmq       v2                b188af0de93c   2 months ago   251MB
 rabbitmq                 3.13-management   b188af0de93c   2 months ago   251MB
