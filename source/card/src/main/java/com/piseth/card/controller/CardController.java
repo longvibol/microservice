@@ -16,26 +16,24 @@ import com.piseth.card.entity.Card;
 import com.piseth.card.mapper.CardMapper;
 import com.piseth.card.service.CardService;
 
+import jakarta.validation.constraints.AssertFalse.List;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
 @RequestMapping("api/cards")
 public class CardController {
-	
+
 	@Autowired
 	private CardService cardService;
 	
 	@Autowired
 	private CardMapper cardMapper;
 	
-	
 	@PostMapping
 	public ResponseEntity<?> save(@RequestBody CardDTO dto){
-		
-		Card card = cardService.save(cardMapper.toCard(dto));
-		return ResponseEntity.status(HttpStatus.CREATED).body(card);
-		
+		Card loan = cardService.save(cardMapper.toCard(dto));
+		return ResponseEntity.status(HttpStatus.CREATED).body(loan);
 	}
 	
 	@GetMapping
@@ -50,6 +48,4 @@ public class CardController {
 		log.debug("Correlation id found: {}", correlationId);
 		return ResponseEntity.ok(cardService.getByCustomerId(customerId));
 	}
-	
-
 }

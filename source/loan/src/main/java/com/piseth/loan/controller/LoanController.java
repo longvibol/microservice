@@ -22,27 +22,23 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("api/loans")
 public class LoanController {
-	
+
 	@Autowired
 	private LoanService loanService;
 	
 	@Autowired
 	private LoanMapper loanMapper;
 	
-	
 	@PostMapping
 	public ResponseEntity<?> save(@RequestBody LoanDTO dto){
-		
 		Loan loan = loanService.save(loanMapper.toLoan(dto));
 		return ResponseEntity.status(HttpStatus.CREATED).body(loan);
-		
 	}
 	
 	@GetMapping
 	public ResponseEntity<?> list(){
 		return ResponseEntity.ok(loanService.getList());
 	}
-	
 	
 	@GetMapping("{customerId}")
 	public ResponseEntity<?> getByCustomerId(
@@ -52,5 +48,4 @@ public class LoanController {
 		log.debug("Correlation id found: {}", correlationId);
 		return ResponseEntity.ok(loanService.getByCustomerId(customerId));
 	}
-
 }

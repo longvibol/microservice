@@ -11,18 +11,10 @@ import com.piseth.school.account.dto.CardResponseDTO;
 
 @FeignClient(name="card")
 public interface CardFeignClient {
+	
+		@GetMapping("/api/cards/{customerId}")
+		List<CardResponseDTO> getCardInfo(
+				@RequestHeader("pisethbank-correlation-id") String correlationId,
+				@PathVariable Long customerId);
 
-//	create card : GET: localhost:8070/api/cards/1 = we need to create the same responde we get
-	
-	
-	@GetMapping("/api/cards/{customerId}")	
-	List<CardResponseDTO> getCardInfo(			
-			@RequestHeader("pisethbank-correlation-id") String correlationId,
-			@PathVariable Long customerId);
-	
-	// we create it base on card controller find by customerID  
-	
-	// It will auto connect to card service 
-
-	
-}
+	}
