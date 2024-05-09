@@ -184,7 +184,7 @@ services:
         EOF
         /docker-entrypoint.sh nginx -g "daemon off;"
     ports:
-      - "3100:3100"
+      - "5000:3100"
     healthcheck:
       test: ["CMD", "service", "nginx", "status"]
       interval: 10s
