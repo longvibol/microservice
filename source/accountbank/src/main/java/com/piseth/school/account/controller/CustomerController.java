@@ -34,40 +34,39 @@ public class CustomerController {
 	private CustomerService customerService;
 	@Autowired
 	private CustomerMapper customerMapper;
-	
+
 	@Autowired
 	private CardFeignClient cardFeignClient;
-	
+
 	@Autowired
 	private LoanFeignClient loanFeignClient;
-	
+
 	@PostMapping
-	public ResponseEntity<?> saveCustomer(@RequestBody CustomerDTO dto){
+	public ResponseEntity<?> saveCustomer(@RequestBody CustomerDTO dto) {
 		Customer customer = customerMapper.toCustomer(dto);
 		customer = customerService.save(customer);
 		return ResponseEntity.ok(customer);
 	}
-	
+
 	@GetMapping
-	public ResponseEntity<?> getCustomers(){
+	public ResponseEntity<?> getCustomers() {
 		return ResponseEntity.ok(customerService.getCustomers());
 	}
-	
+
 	@GetMapping("{customerId}")
-	public ResponseEntity<?> getCustomers(@PathVariable Long customerId){
+	public ResponseEntity<?> getCustomers(@PathVariable Long customerId) {
 		return ResponseEntity.ok(customerService.getById(customerId));
 	}
-	
+
 	//@CircuitBreaker(name = "customerDetailSupport", fallbackMethod = "getCustomerDetailDefault")
-		//@Retry(name = "retryCustomerDetail", fallbackMethod = "getCustomerDetailDefault")
-		
+		@Retry(name = "retryCustomerDetail", fallbackMethod = "getCustomerDetailDefault")		
 		@GetMapping("customerDetail/{myCustomerId}")
 		public ResponseEntity<CustomerDetailDTO> getCustomerDetail(
 				@RequestHeader("pisethbank-correlation-id") String correlationId,
-				@PathVariable("myCustomerId") Long customerId){
-			//System.out.println("=========== ++Account Service++ ==============");
-			//log.debug("Correlation id found: {}", correlationId);
-			log.debug("fetchCustomerDetail method start");
+				@PathVariable("myCustomerId")Long customerId){
+			
+		
+			log.debug("Correlation id found: {}", correlationId);
 			
 			CustomerDetailDTO dto = new CustomerDetailDTO();
 			Customer customer = customerService.getById(customerId);
@@ -83,7 +82,7 @@ public class CustomerController {
 			dto.setLoans(loanInfo);
 			dto.setCards(cardInfo);
 			
-			log.debug("fetchCustomerDetail method end");
+			
 			return ResponseEntity.ok(dto);
 		}
 		
@@ -108,4 +107,5 @@ public class CustomerController {
 		public String sayHi(Throwable t) {
 			return "Hi, welcome to PisethBank";
 		}
-}
+
+	}
