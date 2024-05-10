@@ -1,9 +1,22 @@
-version: "3"
+version: "3.8"
 
 networks:
   loki:
 
 services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - loki
 
   read:
     image: grafana/loki:2.9.2
