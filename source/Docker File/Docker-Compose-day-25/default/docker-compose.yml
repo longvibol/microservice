@@ -1,6 +1,196 @@
 version: "3.8"
 services:
 
+  rabbit:
+    image: vibollong/rabbitmq:v2
+    hostname: rabbitmq
+    container_name: rabbit
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - vibolnetwork
+
+  configserver:
+    image: vibollong/configserver:v2
+    container_name: configserver-ms
+    mem_limit: 700m  
+    healthcheck:
+      test: "curl --fail --silent localhost:8071/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    ports:
+      - "8071:8071"
+    depends_on:
+      rabbit:
+        condition: service_healthy
+    environment:
+      SPRING_RABBITMQ_HOST: rabbit
+    networks:
+      - vibolnetwork
+
+  eurekaserver:
+    image: vibollong/eurekaserver:v2
+    container_name: eurekaserver-ms
+    mem_limit: 700m
+    ports:
+      - "9001:9001"
+    networks:
+      vibolnetwork:
+       aliases:
+          - eurekaserver       
+    depends_on: 
+      - configserver
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment: 
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
+
+  mongodb:
+    image: mvertes/alpine-mongo:latest
+    container_name: mongo
+    ports:
+      - "7777:27017"
+    healthcheck:
+      test: echo 'db.stats().ok' | mongo localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    volumes:
+      - './data:/data/db'
+    networks:
+      vibolnetwork:
+        aliases: 
+          - mongodb  
+
+  account:
+    image: vibollong/account:v2
+    container_name: account-ms
+    healthcheck:
+      test: "curl --fail --silent localhost:8081/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    ports:
+      - "8081:8081"
+    networks:
+      - vibolnetwork
+    depends_on: 
+      configserver:
+        condition: service_healthy
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 10
+        window: 120s
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9001/eureka/
+      SPRING_RABBITMQ_HOST: rabbit
+
+  card:
+    image: vibollong/card:v2
+    container_name: card-ms
+    healthcheck:
+      test: "curl --fail --silent localhost:8070/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    mem_limit: 700m
+    ports:
+      - "8070:8070"
+    depends_on: 
+      - configserver
+      - eurekaserver
+      - mongodb
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment: 
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9001/eureka/
+      SPRING_RABBITMQ_HOST: rabbit
+      MONGODB_HOST_NAME: mongodb
+    networks:
+      - vibolnetwork
+
+  loan:
+    image: vibollong/loan:v2
+    container_name: loan-ms
+    healthcheck:
+      test: "curl --fail --silent localhost:8090/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    mem_limit: 700m
+    ports:
+      - "8090:8090"
+    networks:
+      - vibolnetwork
+    depends_on: 
+      - configserver
+      - mongodb
+      - eurekaserver
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+        window: 120s
+    environment: 
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9001/eureka/
+      SPRING_RABBITMQ_HOST: rabbit
+      MONGODB_HOST_NAME: mongodb  
+
+  gatewayserver:
+    image: vibollong/gatewayserver:v2
+    container_name: gatewayserver-ms
+    mem_limit: 700m
+    ports:
+      - "8072:8072"
+    networks:
+      vibolnetwork:
+        aliases:
+          - gatewayserver 
+    depends_on: 
+      - configserver
+      - eurekaserver
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment: 
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9001/eureka/
+
   read:
     image: grafana/loki:2.9.2
     command: "-config.file=/etc/loki/config.yaml -target=read"
@@ -17,8 +207,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-    networks:
+    networks: &loki-dns
       vibolnetwork:
+        aliases:
+          - loki
 
   write:
     image: grafana/loki:2.9.2
@@ -37,7 +229,7 @@ services:
     depends_on:
       - minio
     networks:
-      vibolnetwork:
+      <<: *loki-dns
 
   promtail:
     image: grafana/promtail:2.9.2
@@ -74,13 +266,15 @@ services:
       timeout: 20s
       retries: 5
     networks:
-      - vibolnetwork
+      - vibolnetwork 
 
-  loki:
-    image: grafana/loki:2.9.2
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: prometheus
     ports:
-      - "3100:3100"
-    command: -config.file=/etc/loki/local-config.yaml
+      - "9090:9090"
+    volumes:
+      - ../observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
       - vibolnetwork
 
@@ -96,37 +290,16 @@ services:
       - sh
       - -euc
       - |
-        mkdir -p /etc/grafana/provisioning/datasources
-        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
-        apiVersion: 1
-        datasources:
-        - name: Loki
-          type: loki
-          access: proxy 
-          orgId: 1
-          url: http://loki:3100
-          basicAuth: false
-          isDefault: true
-          version: 1
-          editable: false
-        EOF
         /run.sh
     ports:
       - "3000:3000"
+    volumes:
+      - ../observability/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
     healthcheck:
-      test: "curl --fail --silent localhost:9001/actuator/health/readiness | grep UP || exit 1"
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1" ]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 10s
-    networks:
-      - vibolnetwork
-
-  prometheus:
-    image: prom/prometheus:v2.45.0
-    container_name: prometheus
-    ports:
-      - "9090:9090"
+      retries: 5
     networks:
       - vibolnetwork
 
@@ -151,7 +324,7 @@ services:
           resolver 127.0.0.11;
 
           server {
-            listen             3100;
+            listen 3100;
 
             location = / {
               return 200 'OK';
@@ -195,184 +368,8 @@ services:
       test: ["CMD", "service", "nginx", "status"]
       interval: 10s
       timeout: 5s
-      retries: 5
-
-  rabbit:
-    image: vibollong/rabbitmq:v2
-    hostname: rabbitmq
-    container_name: rabbit
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    healthcheck:
-      test: rabbitmq-diagnostics check_port_connectivity
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
+      retries: 5  
     networks:
       - vibolnetwork
-      
-  eurekaserver:
-    image: vibollong/eurekaserver:v2
-    container_name: eurekaserver
-    mem_limit: 700m
-    ports:
-      - "9001:9001"
-    networks:
-      vibolnetwork:
-       aliases:
-          - eurekaserver       
-    depends_on: 
-      - configserver
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-    environment: 
-      SPRING_PROFILES_ACTIVE: default
-      SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
-
-  configserver:
-    image: vibollong/configserver:v2
-    mem_limit: 700m
-    container_name: configserver-ms
-    healthcheck:
-      test: "curl --fail --silent localhost:8071/actuator/health/readiness | grep UP || exit 1"
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-    ports:
-      - "8071:8071"
-    depends_on:
-      rabbit:
-        condition: service_healthy
-    environment:
-      SPRING_RABBITMQ_HOST: rabbit
-    networks:
-      - vibolnetwork
-
-  mongodb:
-    image: mvertes/alpine-mongo:latest
-    container_name: mongo
-    ports:
-      - "7777:27017"
-    healthcheck:
-      test: echo 'db.stats().ok' | mongo localhost:27017/test --quiet
-      interval: 10s
-      timeout: 10s
-      retries: 5
-      start_period: 40s
-    volumes:
-      - './data:/data/db'
-    networks:
-      vibolnetwork:
-        aliases: 
-          - mongodb  
-          
-  gatewayserver:
-    image: vibollong/gatewayserver:v2
-    container_name: gatewayserver-ms
-    mem_limit: 700m
-    ports:
-      - "8072:8072"
-    networks:
-      vibolnetwork:
-        aliases:
-          - gatewayserver 
-    depends_on: 
-      - configserver
-      - eurekaserver
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-    environment: 
-      SPRING_PROFILES_ACTIVE: default
-      SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9001/eureka/
-
-  loan:
-    image: vibollong/loan:v2
-    container_name: loan-ms
-    mem_limit: 700m
-    ports:
-      - "8090:8090"
-    networks:
-      - vibolnetwork
-    depends_on: 
-      - configserver
-      - mongodb
-      - eurekaserver
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 5
-        window: 120s
-    environment: 
-      SPRING_PROFILES_ACTIVE: default
-      SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9001/eureka/
-      SPRING_RABBITMQ_HOST: rabbit
-      MONGODB_HOST_NAME: mongodb  
-
-  card:
-    image: vibollong/card:v2
-    container_name: card-ms
-    mem_limit: 700m
-    ports:
-      - "8070:8070"
-    networks:
-      - vibolnetwork
-    depends_on: 
-      - configserver
-      - eurekaserver
-      - mongodb
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-    environment: 
-      SPRING_PROFILES_ACTIVE: default
-      SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9001/eureka/
-      SPRING_RABBITMQ_HOST: rabbit
-      MONGODB_HOST_NAME: mongodb
-
-  account:
-    image: vibollong/account:v2
-    container_name: account-ms
-    healthcheck:
-      test: "curl --fail --silent localhost:8081/actuator/health/readiness | grep UP || exit 1"
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-    ports:
-      - "8081:8081"
-    networks:
-      - vibolnetwork
-    depends_on: 
-      configserver:
-        condition: service_healthy
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 10
-        window: 120s
-    environment:
-      SPRING_PROFILES_ACTIVE: default
-      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9001/eureka/
-      SPRING_RABBITMQ_HOST: rabbit
 networks:
   vibolnetwork:
