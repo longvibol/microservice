@@ -1,8 +1,7 @@
 version: "3.8"
 services:
-
   rabbit:
-    image: vibollong/rabbitmq:v2
+    image: rabbitmq:3.12-management
     hostname: rabbitmq
     container_name: rabbit
     ports:
@@ -14,13 +13,13 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
-    networks:
-      - vibolnetwork
+    extends:
+      file: common.yml
+      service: ms-deploy-network
 
   configserver:
     image: vibollong/configserver:v2
     container_name: configserver-ms
-    mem_limit: 700m  
     healthcheck:
       test: "curl --fail --silent localhost:8071/actuator/health/readiness | grep UP || exit 1"
       interval: 10s
@@ -32,32 +31,24 @@ services:
     depends_on:
       rabbit:
         condition: service_healthy
-    environment:
-      SPRING_RABBITMQ_HOST: rabbit
-    networks:
-      - vibolnetwork
+    extends:
+      file: common.yml
+      service: ms-base
 
   eurekaserver:
     image: vibollong/eurekaserver:v2
     container_name: eurekaserver-ms
-    mem_limit: 700m
+    healthcheck:
+      test: "curl --fail --silent localhost:9001/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     ports:
       - "9001:9001"
-    networks:
-      vibolnetwork:
-       aliases:
-          - eurekaserver       
-    depends_on: 
-      - configserver
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-    environment: 
-      SPRING_PROFILES_ACTIVE: default
-      SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
+    extends:
+      file: common.yml
+      service: ms-base-configserver 
 
   mongodb:
     image: mvertes/alpine-mongo:latest
@@ -72,10 +63,9 @@ services:
       start_period: 40s
     volumes:
       - './data:/data/db'
-    networks:
-      vibolnetwork:
-        aliases: 
-          - mongodb  
+    extends:
+      file: common.yml
+      service: ms-deploy-network
 
   account:
     image: vibollong/account:v2
@@ -88,22 +78,9 @@ services:
       start_period: 10s
     ports:
       - "8081:8081"
-    networks:
-      - vibolnetwork
-    depends_on: 
-      configserver:
-        condition: service_healthy
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 10
-        window: 120s
-    environment:
-      SPRING_PROFILES_ACTIVE: default
-      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9001/eureka/
-      SPRING_RABBITMQ_HOST: rabbit
+    extends:
+      file: common.yml
+      service: ms-base-eurekaserver
 
   card:
     image: vibollong/card:v2
@@ -114,27 +91,13 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
-    mem_limit: 700m
     ports:
       - "8070:8070"
-    depends_on: 
-      - configserver
-      - eurekaserver
-      - mongodb
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-    environment: 
-      SPRING_PROFILES_ACTIVE: default
-      SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9001/eureka/
-      SPRING_RABBITMQ_HOST: rabbit
+    environment:
       MONGODB_HOST_NAME: mongodb
-    networks:
-      - vibolnetwork
+    extends:
+      file: common.yml
+      service: ms-base-eurekaserver
 
   loan:
     image: vibollong/loan:v2
@@ -145,51 +108,29 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
-    mem_limit: 700m
     ports:
       - "8090:8090"
-    networks:
-      - vibolnetwork
-    depends_on: 
-      - configserver
-      - mongodb
-      - eurekaserver
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 5
-        window: 120s
-    environment: 
-      SPRING_PROFILES_ACTIVE: default
-      SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9001/eureka/
-      SPRING_RABBITMQ_HOST: rabbit
-      MONGODB_HOST_NAME: mongodb  
+    environment:
+      MONGODB_HOST_NAME: mongodb
+    extends:
+      file: common.yml
+      service: ms-base-eurekaserver
 
   gatewayserver:
     image: vibollong/gatewayserver:v2
     container_name: gatewayserver-ms
-    mem_limit: 700m
     ports:
       - "8072:8072"
-    networks:
-      vibolnetwork:
-        aliases:
-          - gatewayserver 
     depends_on: 
-      - configserver
-      - eurekaserver
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-    environment: 
-      SPRING_PROFILES_ACTIVE: default
-      SPRING_CONFIG_IMPORT: optional:configserver:http://localhost:8071/
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:9001/eureka/
+      account:
+        condition: service_healthy
+      card:
+        condition: service_healthy
+      loan:
+        condition: service_healthy  
+    extends:
+      file: common.yml
+      service: ms-base-eurekaserver
 
   read:
     image: grafana/loki:2.9.2
@@ -208,7 +149,7 @@ services:
       timeout: 5s
       retries: 10
     networks: &loki-dns
-      vibolnetwork:
+      pisethbanknet:
         aliases:
           - loki
 
@@ -236,11 +177,12 @@ services:
     volumes:
       - ../observability/promtail/promtail-local-config.yaml:/etc/promtail/config.yaml:ro
       - /var/run/docker.sock:/var/run/docker.sock
-    command: -config.file=/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yaml
     depends_on:
       - gateway
-    networks:
-      - vibolnetwork
+    extends:
+      file: common.yml
+      service: ms-deploy-network
 
   minio:
     image: minio/minio
@@ -265,9 +207,11 @@ services:
       interval: 15s
       timeout: 20s
       retries: 5
-    networks:
-      - vibolnetwork 
+    extends:
+      file: common.yml
+      service: ms-deploy-network
 
+  
   prometheus:
     image: prom/prometheus:v2.45.0
     container_name: prometheus
@@ -275,8 +219,9 @@ services:
       - "9090:9090"
     volumes:
       - ../observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-    networks:
-      - vibolnetwork
+    extends:
+      file: common.yml
+      service: ms-deploy-network
 
   grafana:
     image: grafana/grafana:latest
@@ -300,8 +245,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - vibolnetwork
+    extends:
+      file: common.yml
+      service: ms-deploy-network
 
   gateway:
     image: nginx:latest
@@ -324,7 +270,7 @@ services:
           resolver 127.0.0.11;
 
           server {
-            listen 3100;
+            listen             3100;
 
             location = / {
               return 200 'OK';
@@ -368,8 +314,10 @@ services:
       test: ["CMD", "service", "nginx", "status"]
       interval: 10s
       timeout: 5s
-      retries: 5  
-    networks:
-      - vibolnetwork
+      retries: 5
+    extends:
+      file: common.yml
+      service: ms-deploy-network
+
 networks:
-  vibolnetwork:
+  pisethbanknet:
