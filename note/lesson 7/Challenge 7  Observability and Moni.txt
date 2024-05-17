@@ -49,6 +49,93 @@ Hight level:
 
 https://grafana.com/docs/loki/latest/setup/install/docker/
 
+========================= Observation Lesson ======================================= 
+
+1. Actuator : it show the metrics of the service and heathlty check 
+It produce the JSON formart and use HTTP endpoints or JMX beans to show us! 
+
+2. Micrometer: automatically expose/actuator/metrics data into something you monitoring system can understand. 
+All you need to do is include that vendor-specific micrometer dependency in your application. 
+ 
+Example: prometheus (is the Micrometer) 
+
+* dependency in spring boot:  
+
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
+
+* application.property: 
+
+management.endpoints.web.exposure.include=*
+management.info.env.enabled=true
+management.endpoint.shutdown.enabled=true
+management.metrics.tags.application: ${spring.application.name}
+
+
+------------------------------------------- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
