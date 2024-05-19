@@ -137,6 +137,18 @@ volumes:
 
 ----------------- Testing and over view of the Prometheus and Grafana 
 
+check prometheus port : 
+
+http://localhost:9090/targets?search=
+
+
+in status we check for the server up or down 
+
+
+- in the graph we check for the server ruuning 
+
+ex: process_uptime_seconds
+
 
 
 
