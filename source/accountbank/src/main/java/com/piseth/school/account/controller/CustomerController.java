@@ -66,7 +66,9 @@ public class CustomerController {
 				@PathVariable("myCustomerId")Long customerId){
 			
 		
-			log.debug("Correlation id found: {}", correlationId);
+			//log.debug("Correlation id found: {}", correlationId);
+			
+			log.debug("FetchDetail Customer Start");
 			
 			CustomerDetailDTO dto = new CustomerDetailDTO();
 			Customer customer = customerService.getById(customerId);
@@ -82,6 +84,7 @@ public class CustomerController {
 			dto.setLoans(loanInfo);
 			dto.setCards(cardInfo);
 			
+			log.debug("FetchDetail Customer End");
 			
 			return ResponseEntity.ok(dto);
 		}
